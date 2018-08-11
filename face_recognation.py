@@ -67,7 +67,7 @@ class FaceRecognition(object):
                 else:
                     user_image_faces_matrix = np.c_[user_image_faces_matrix, img]
             self.user_matrix = self.V.T.dot(user_image_faces_matrix - self.mean_face)
-            
+
     def __recognize(self, image, face):
         """
         the system approves the user's identity according to his face
@@ -77,15 +77,15 @@ class FaceRecognition(object):
             (x, y, w, h) = face
             image = Image.fromarray(image).crop((x, y, x+w, y+h)).resize(self.img_size)
             img_vec = self.V.T.dot(np.array(image).reshape([-1, 1]) - self.mean_face)
-            distances = [la.norm(img_vec - self.user_matrix[:, j].reshape([-1, 1])) \
-                         for j in range(self.user_matrix.shape[1])]
-            
+            distances = np.array([la.norm(img_vec - self.user_matrix[:, j].reshape([-1, 1])) \
+                         for j in range(self.user_matrix.shape[1])])
             min_dis = np.min(distances)
+
             index = np.where(distances == min_dis)[0][0]
             # print(min_dis, index)
             name = self.user_names[index]
-        except:
-            pass
+        except Exception:
+            print("识别异常")
         
         return name
         
