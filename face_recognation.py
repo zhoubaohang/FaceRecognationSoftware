@@ -32,7 +32,7 @@ class FaceRecognition(object):
         # load pca model
         self.__load_model()
         # user image matrix
-#        self.user_matrix = None
+        self.padding = (23, 28)
         # load user images
         self.load_user_images()
         
@@ -72,10 +72,11 @@ class FaceRecognition(object):
         """
         the system approves the user's identity according to his face
         """
+        padW, padH = self.padding
         name = ''
         try:
             (x, y, w, h) = face
-            image = Image.fromarray(image).crop((x, y, x+w, y+h)).resize(self.img_size)
+            image = Image.fromarray(image).crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.img_size)
             img_vec = self.V.T.dot(np.array(image).reshape([-1, 1]) - self.mean_face)
             distances = np.array([la.norm(img_vec - self.user_matrix[:, j].reshape([-1, 1])) \
                          for j in range(self.user_matrix.shape[1])])

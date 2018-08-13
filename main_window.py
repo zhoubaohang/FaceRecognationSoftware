@@ -53,7 +53,7 @@ class TopMenu():
         self.lb_progress.grid(row = 1, column = 0)
     
     def __import(self):
-        
+        padW, padH = self.root.fr.padding
         path = self.path.get()
         if path:
             import os
@@ -75,7 +75,7 @@ class TopMenu():
                             maxface = face
                             face_area = w*h
                     (x, y, w, h) = maxface
-                    image = Image.fromarray(gray).crop((x, y, x+w, y+h)).resize(self.root.fr.img_size)
+                    image = Image.fromarray(gray).crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.root.fr.img_size)
                     image.save('{0}{1}.bmp'.format(self.root.user_image_path, imgs[i].split('.')[0]))
                 else:
                     messagebox.showinfo('警告', 'image file: {0} \n find no faces in the image, please check'.format(imgs[i]))
@@ -165,7 +165,7 @@ class MainWindow(tk.Tk):
         self.update()
     
     def __catchPhotos(self):
-        
+        padW, padH = self.fr.padding
         if self.running_flag:
             name = self.tv_name.get()
             if name != '':
@@ -173,7 +173,7 @@ class MainWindow(tk.Tk):
                 image, gray, faces, _ = self.fr.findFaces(frame)
                 if len(faces):
                     (x, y, w, h) = faces[0]
-                    image = Image.fromarray(gray).crop((x, y, x+w, y+h)).resize(self.fr.img_size)
+                    image = Image.fromarray(gray).crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.fr.img_size)
                     image.save('{0}{1}.bmp'.format(self.user_image_path, name))
                     self.fr.load_user_images()
                 else:
