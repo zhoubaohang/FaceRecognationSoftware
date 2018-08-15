@@ -6,9 +6,9 @@ Created on Tue Jul 24 08:57:19 2018
 """
 
 from main_window import MainWindow
-from face_recognation import FaceRecognition
+from face_recognition import DeepFaceRecognition
 
-fr = FaceRecognition()
+dfr = DeepFaceRecognition()
 
-wm = MainWindow(fr)
+wm = MainWindow(dfr)
 wm.launch()

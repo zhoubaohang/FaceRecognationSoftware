@@ -53,7 +53,7 @@ class TopMenu():
         self.lb_progress.grid(row = 1, column = 0)
     
     def __import(self):
-        padW, padH = self.root.fr.padding
+        padW, padH = self.root.dfr.padding
         path = self.path.get()
         if path:
             import os
@@ -66,7 +66,7 @@ class TopMenu():
                 self.window.update()
                 
                 image_path = "{0}\\{1}".format(path, imgs[i])
-                image, gray, faces, _ = self.root.fr.findFaces(cv2.cvtColor(numpy.asarray(Image.open(image_path)), cv2.COLOR_RGB2BGR))
+                image, faces, _ = self.root.dfr.recognize(cv2.cvtColor(numpy.asarray(Image.open(image_path)), cv2.COLOR_RGB2BGR))
                 if len(faces):
                     face_area, maxface = 0, faces[0]
                     for face in faces:
@@ -75,12 +75,13 @@ class TopMenu():
                             maxface = face
                             face_area = w*h
                     (x, y, w, h) = maxface
-                    image = Image.fromarray(gray).crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.root.fr.img_size)
+                    image = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))\
+                                 .crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.root.dfr.img_size)
                     image.save('{0}{1}.bmp'.format(self.root.user_image_path, imgs[i].split('.')[0]))
                 else:
                     messagebox.showinfo('警告', 'image file: {0} \n find no faces in the image, please check'.format(imgs[i]))
 
-            self.root.fr.load_user_images()
+            self.root.dfr.reload_users()
         else:
             messagebox.showinfo("提示", "请选择导入人像路径")
         
@@ -95,7 +96,7 @@ class TopMenu():
 
 class MainWindow(tk.Tk):
     
-    def __init__(self, faceRecognation):
+    def __init__(self, deepFacerecognition):
         
         super().__init__()
         # init gui
@@ -104,8 +105,8 @@ class MainWindow(tk.Tk):
         self.running_flag = False
         # user face images path
         self.user_image_path = "data\\user\\"
-        # face recognation class
-        self.fr = faceRecognation
+        # deep face recognation class
+        self.dfr = deepFacerecognition
         
     
     def __init_gui(self):
@@ -143,9 +144,9 @@ class MainWindow(tk.Tk):
             # get a frame
             ret, frame = self.cap.read()
             # get faces
-            image, _, _, names = self.fr.findFaces(frame)
-            if len(names):
-                self.lb_name['text'] = ','.join(names)                        
+            image, faces, names = self.dfr.recognize(frame)
+            if len(faces):
+                self.lb_name['text'] = ','.join(names)                       
             else:
                 self.lb_name['text'] = '未检测到人脸'
             # show a frame
@@ -165,17 +166,18 @@ class MainWindow(tk.Tk):
         self.update()
     
     def __catchPhotos(self):
-        padW, padH = self.fr.padding
+        padW, padH = self.dfr.padding
         if self.running_flag:
             name = self.tv_name.get()
             if name != '':
                 ret, frame = self.cap.read()
-                image, gray, faces, _ = self.fr.findFaces(frame)
+                image, faces, _ = self.dfr.recognize(frame)
                 if len(faces):
                     (x, y, w, h) = faces[0]
-                    image = Image.fromarray(gray).crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.fr.img_size)
+                    image = Image.fromarray(cv2.cvtColor(image,cv2.COLOR_BGR2RGB))\
+                                 .crop((x-padW, y-padH, x+padW+w, y+padH+h)).resize(self.dfr.img_size)
                     image.save('{0}{1}.bmp'.format(self.user_image_path, name))
-                    self.fr.load_user_images()
+                    self.dfr.reload_users()
                 else:
                     messagebox.showinfo('提示', '未收集到人像, 请重新拍照')
             else:
